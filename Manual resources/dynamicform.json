@@ -5,7 +5,7 @@
                             },
         "type":  "markdown",
         "summaryVisibility":  "Show",
-        "body":  "The following report will show local AD accounts that have \u0027Send on behalf\u0027 enabled. Please wait while the data is loading...",
+        "body":  "The following report will show local AD accounts that have \"Send on behalf\" enabled. Please wait while the data is loading...",
         "requiresTemplateOptions":  false
     },
     {
