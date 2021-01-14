@@ -181,9 +181,9 @@ function Invoke-HelloIDDynamicForm {
             #Create Dynamic form
             $body = @{
                 Name       = $FormName;
-                FormSchema = $FormSchema
+                FormSchema = [Object[]]($FormSchema | ConvertFrom-Json)
             }
-            $body = $body | ConvertTo-Json
+            $body = $body | ConvertTo-Json -Depth 100
     
             $uri = ($script:PortalBaseUrl +"api/v1/forms")
             $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -261,11 +261,17 @@ function Invoke-HelloIDDelegatedForm {
 $tmpValue = @'
 [{ "OU": "OU=Users,OU=HelloID Training,DC=veeken,DC=local"},{"OU": "OU=Disabled Users,OU=HelloID Training,DC=veeken,DC=local"}]
 '@ 
-Invoke-HelloIDGlobalVariable -Name "ADusersReportOU" -Value $tmpValue -Secret "False" 
+$tmpName = @'
+ADusersReportOU
+'@ 
+Invoke-HelloIDGlobalVariable -Name $tmpName -Value $tmpValue -Secret "False" 
 $tmpValue = @'
 C:\HIDreports\
 '@ 
-Invoke-HelloIDGlobalVariable -Name "HIDreportFolder" -Value $tmpValue -Secret "False" 
+$tmpName = @'
+HIDreportFolder
+'@ 
+Invoke-HelloIDGlobalVariable -Name $tmpName -Value $tmpValue -Secret "False" 
 <# End: HelloID Global Variables #>
 
 
@@ -306,17 +312,23 @@ $tmpInput = @'
 
 '@ 
 $dataSourceGuid_0 = [PSCustomObject]@{} 
-Invoke-HelloIDDatasource -DatasourceName "AD-user-generate-table-report-mailbox-send-on-behalf" -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript $tmpPsScript -DatasourceModel $tmpModel -returnObject ([Ref]$dataSourceGuid_0) 
+$dataSourceGuid_0_Name = @'
+AD-user-generate-table-report-mailbox-send-on-behalf
+'@ 
+Invoke-HelloIDDatasource -DatasourceName $dataSourceGuid_0_Name -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript $tmpPsScript -DatasourceModel $tmpModel -returnObject ([Ref]$dataSourceGuid_0) 
 <# End: DataSource "AD-user-generate-table-report-mailbox-send-on-behalf" #>
 <# End: HelloID Data sources #>
 
 <# Begin: Dynamic Form "AD - Report - Accounts using "send on behalf" settings" #>
 $tmpSchema = @"
-[{"templateOptions":{},"type":"markdown","summaryVisibility":"Show","body":"The following report will show local AD accounts that have \u0027Send on behalf\u0027 enabled. Please wait while the data is loading...","requiresTemplateOptions":false},{"key":"grid","templateOptions":{"label":"Results","grid":{"columns":[{"headerName":"CanonicalName","field":"CanonicalName"},{"headerName":"Displayname","field":"Displayname"},{"headerName":"UserPrincipalName","field":"UserPrincipalName"},{"headerName":"Department","field":"Department"},{"headerName":"Title","field":"Title"},{"headerName":"Enabled","field":"Enabled"}],"height":500,"rowSelection":"single"},"dataSourceConfig":{"dataSourceGuid":"$dataSourceGuid_0","input":{"propertyInputs":[]}},"useFilter":true,"useDefault":false},"type":"grid","summaryVisibility":"Hide element","requiresTemplateOptions":true},{"key":"exportReport","templateOptions":{"label":"Export report (local export on HelloID Agent server)","useSwitch":true,"checkboxLabel":"Yes","mustBeTrue":true},"type":"boolean","summaryVisibility":"Show","requiresTemplateOptions":true}]
+[{"templateOptions":{},"type":"markdown","summaryVisibility":"Show","body":"The following report will show local AD accounts that have \"Send on behalf\" enabled. Please wait while the data is loading...","requiresTemplateOptions":false},{"key":"grid","templateOptions":{"label":"Results","grid":{"columns":[{"headerName":"CanonicalName","field":"CanonicalName"},{"headerName":"Displayname","field":"Displayname"},{"headerName":"UserPrincipalName","field":"UserPrincipalName"},{"headerName":"Department","field":"Department"},{"headerName":"Title","field":"Title"},{"headerName":"Enabled","field":"Enabled"}],"height":500,"rowSelection":"single"},"dataSourceConfig":{"dataSourceGuid":"$dataSourceGuid_0","input":{"propertyInputs":[]}},"useFilter":true,"useDefault":false},"type":"grid","summaryVisibility":"Hide element","requiresTemplateOptions":true},{"key":"exportReport","templateOptions":{"label":"Export report (local export on HelloID Agent server)","useSwitch":true,"checkboxLabel":"Yes","mustBeTrue":true},"type":"boolean","summaryVisibility":"Show","requiresTemplateOptions":true}]
 "@ 
 
 $dynamicFormGuid = [PSCustomObject]@{} 
-Invoke-HelloIDDynamicForm -FormName "AD - Report - Accounts using ""send on behalf"" settings" -FormSchema $tmpSchema  -returnObject ([Ref]$dynamicFormGuid) 
+$dynamicFormName = @'
+AD - Report - Accounts using "send on behalf" settings
+'@ 
+Invoke-HelloIDDynamicForm -FormName $dynamicFormName -FormSchema $tmpSchema  -returnObject ([Ref]$dynamicFormGuid) 
 <# END: Dynamic Form #>
 
 <# Begin: Delegated Form Access Groups and Categories #>
@@ -364,7 +376,10 @@ $delegatedFormCategoryGuids = ($delegatedFormCategoryGuids | ConvertTo-Json -Com
 
 <# Begin: Delegated Form #>
 $delegatedFormRef = [PSCustomObject]@{guid = $null; created = $null} 
-Invoke-HelloIDDelegatedForm -DelegatedFormName "AD - Report - Accounts using ""send on behalf"" settings" -DynamicFormGuid $dynamicFormGuid -AccessGroups $delegatedFormAccessGroupGuids -Categories $delegatedFormCategoryGuids -UseFaIcon "True" -FaIcon "fa fa-info-circle" -returnObject ([Ref]$delegatedFormRef) 
+$delegatedFormName = @'
+AD - Report - Accounts using "send on behalf" settings
+'@
+Invoke-HelloIDDelegatedForm -DelegatedFormName $delegatedFormName -DynamicFormGuid $dynamicFormGuid -AccessGroups $delegatedFormAccessGroupGuids -Categories $delegatedFormCategoryGuids -UseFaIcon "True" -FaIcon "fa fa-info-circle" -returnObject ([Ref]$delegatedFormRef) 
 <# End: Delegated Form #>
 
 <# Begin: Delegated Form Task #>
@@ -429,8 +444,11 @@ if($delegatedFormRef.created -eq $true) {
 '@ 
 
 	$delegatedFormTaskGuid = [PSCustomObject]@{} 
-	Invoke-HelloIDAutomationTask -TaskName "AD-export-report-accounts-mailbox-send-on-behalf" -UseTemplate "False" -AutomationContainer "8" -Variables $tmpVariables -PowershellScript $tmpScript -ObjectGuid $delegatedFormRef.guid -ForceCreateTask $true -returnObject ([Ref]$delegatedFormTaskGuid) 
+$delegatedFormTaskName = @'
+AD-export-report-accounts-mailbox-send-on-behalf
+'@
+	Invoke-HelloIDAutomationTask -TaskName $delegatedFormTaskName -UseTemplate "False" -AutomationContainer "8" -Variables $tmpVariables -PowershellScript $tmpScript -ObjectGuid $delegatedFormRef.guid -ForceCreateTask $true -returnObject ([Ref]$delegatedFormTaskGuid) 
 } else {
-	Write-ColorOutput Yellow "Delegated form 'AD - Report - Accounts using "send on behalf" settings' already exists. Nothing to do with the Delegated Form task..." 
+	Write-ColorOutput Yellow "Delegated form '$delegatedFormName' already exists. Nothing to do with the Delegated Form task..." 
 }
 <# End: Delegated Form Task #>
