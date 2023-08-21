@@ -347,14 +347,14 @@ Invoke-HelloIDDatasource -DatasourceName $dataSourceGuid_0_Name -DatasourceType 
 <# End: DataSource "AD-user-generate-table-report-mailbox-send-on-behalf" #>
 <# End: HelloID Data sources #>
 
-<# Begin: Dynamic Form "AD - Report - Accounts using "send on behalf" settings" #>
+<# Begin: Dynamic Form "AD - Report - Accounts using send on behalf settings" #>
 $tmpSchema = @"
 [{"templateOptions":{},"type":"markdown","summaryVisibility":"Show","body":"The following report will show local AD accounts that have \"Send on behalf\" enabled. Please wait while the data is loading...","requiresTemplateOptions":false},{"key":"grid","templateOptions":{"label":"Results","grid":{"columns":[{"headerName":"CanonicalName","field":"CanonicalName"},{"headerName":"Displayname","field":"Displayname"},{"headerName":"UserPrincipalName","field":"UserPrincipalName"},{"headerName":"Department","field":"Department"},{"headerName":"Title","field":"Title"},{"headerName":"Enabled","field":"Enabled"}],"height":500,"rowSelection":"single"},"dataSourceConfig":{"dataSourceGuid":"$dataSourceGuid_0","input":{"propertyInputs":[]}},"useFilter":true,"useDefault":false},"type":"grid","summaryVisibility":"Hide element","requiresTemplateOptions":true},{"key":"exportReport","templateOptions":{"label":"Export report (local export on HelloID Agent server)","useSwitch":true,"checkboxLabel":"Yes","mustBeTrue":true},"type":"boolean","summaryVisibility":"Show","requiresTemplateOptions":true}]
 "@ 
 
 $dynamicFormGuid = [PSCustomObject]@{} 
 $dynamicFormName = @'
-AD - Report - Accounts using "send on behalf" settings
+AD - Report - Accounts using send on behalf settings
 '@ 
 Invoke-HelloIDDynamicForm -FormName $dynamicFormName -FormSchema $tmpSchema  -returnObject ([Ref]$dynamicFormGuid) 
 <# END: Dynamic Form #>
@@ -408,82 +408,12 @@ $delegatedFormCategoryGuids = (ConvertTo-Json -InputObject $delegatedFormCategor
 <# Begin: Delegated Form #>
 $delegatedFormRef = [PSCustomObject]@{guid = $null; created = $null} 
 $delegatedFormName = @'
-AD - Report - Accounts using "send on behalf" settings
+AD - Report - Accounts using send on behalf settings
 '@
 $tmpTask = @'
-{"name":"AD - Report - Accounts using \"send on behalf\" settings","script":null,"runInCloud":false}
+{"name":"AD - Report - Accounts using send on behalf settings","script":"$VerbosePreference = \"SilentlyContinue\"\r\n$InformationPreference = \"Continue\"\r\n$WarningPreference = \"Continue\"\r\n\r\n# variables configured in form\r\n$exportReport = $form.exportReport\r\n\r\ntry {\r\n    if($exportReport -eq \"True\") {\r\n        ## export file properties\r\n        if($HIDreportFolder.EndsWith(\"\\\") -eq $false){\r\n            $HIDreportFolder = $HIDreportFolder + \"\\\"\r\n        }\r\n        \r\n        $timeStamp = $(get-date -f yyyyMMddHHmmss)\r\n        $exportFile = $HIDreportFolder + \"Report_AD_AccountsMailboxSendOnBehalf_\" + $timeStamp + \".csv\"\r\n        \r\n        ## Report details\r\n        $filter = {publicDelegates -like \"*\"}\r\n        $properties = \"CanonicalName\", \"Displayname\", \"UserPrincipalName\", \"SamAccountName\", \"Department\", \"Title\", \"Enabled\"\r\n    \r\n        $ous = $ADusersReportOU | ConvertFrom-Json\r\n        $result = foreach($item in $ous) {\r\n            Get-ADUser -Filter $filter -SearchBase $item.ou -Properties $properties\r\n        }\r\n        $resultCount = @($result).Count\r\n        $result = $result | Sort-Object -Property Displayname\r\n        \r\n        ## export details\r\n        $exportData = @()\r\n        if($resultCount -gt 0){\r\n            foreach($r in $result){\r\n                $exportData += [pscustomobject]@{\r\n                    \"CanonicalName\" = $r.CanonicalName;\r\n                    \"Displayname\" = $r.Displayname;\r\n                    \"UserPrincipalName\" = $r.UserPrincipalName;\r\n                    \"SamAccountName\" = $r.SamAccountName;\r\n                    \"Department\" = $r.Department;\r\n                    \"Title\" = $r.Title;\r\n                    \"Enabled\" = $r.Enabled;\r\n                }\r\n            }\r\n        }\r\n        \r\n        $exportCount = @($exportData).Count\r\n        Write-Information \"Export row count: $exportCount\"\r\n        \r\n        $exportData = $exportData | Sort-Object -Property productName, userName\r\n        $exportData | Export-Csv -Path $exportFile -Delimiter \";\" -NoTypeInformation\r\n        \r\n        Write-Information \"Report [$exportFile] containing $exportCount records created successfully\"\r\n        $Log = @{\r\n            Action            = \"Undefined\" # optional. ENUM (undefined = default) \r\n            System            = \"ActiveDirectory\" # optional (free format text) \r\n            Message           = \"Report [$exportFile] containing $exportCount records created successfully\" # required (free format text) \r\n            IsError           = $false # optional. Elastic reporting purposes only. (default = $false. $true = Executed action returned an error) \r\n            TargetDisplayName = $exportFile # optional (free format text) \r\n            TargetIdentifier  = \"\" # optional (free format text) \r\n        }\r\n        #send result back  \r\n        Write-Information -Tags \"Audit\" -MessageData $log\r\n    }\r\n} catch {\r\n    Write-Error \"Error generating report. Error: $($_.Exception.Message)\"\r\n    $Log = @{\r\n        Action            = \"Undefined\" # optional. ENUM (undefined = default) \r\n        System            = \"ActiveDirectory\" # optional (free format text) \r\n        Message           = \"Error generating report [$exportFile]\" # required (free format text) \r\n        IsError           = $true # optional. Elastic reporting purposes only. (default = $false. $true = Executed action returned an error) \r\n        TargetDisplayName = $exportFile # optional (free format text) \r\n        TargetIdentifier  = \"\" # optional (free format text) \r\n    }\r\n    #send result back  \r\n    Write-Information -Tags \"Audit\" -MessageData $log\r\n}","runInCloud":false}
 '@ 
 
 Invoke-HelloIDDelegatedForm -DelegatedFormName $delegatedFormName -DynamicFormGuid $dynamicFormGuid -AccessGroups $delegatedFormAccessGroupGuids -Categories $delegatedFormCategoryGuids -UseFaIcon "True" -FaIcon "fa fa-info-circle" -task $tmpTask -returnObject ([Ref]$delegatedFormRef) 
 <# End: Delegated Form #>
 
-<# Begin: Delegated Form Automation Task #>
-if($delegatedFormRef.created -eq $true) { 
-	$tmpScript = @'
-            try {
-                if($exportReport -eq "True") {
-                    ## export file properties
-                    if($HIDreportFolder.EndsWith("\") -eq $false){
-                        $HIDreportFolder = $HIDreportFolder + "\"
-                    }
-                    
-                    $timeStamp = $(get-date -f yyyyMMddHHmmss)
-                    $exportFile = $HIDreportFolder + "Report_AD_AccountsMailboxSendOnBehalf_" + $timeStamp + ".csv"
-                    
-                    ## Report details
-                    $filter = {publicDelegates -like "*"}
-                    $properties = "CanonicalName", "Displayname", "UserPrincipalName", "SamAccountName", "Department", "Title", "Enabled"
-                
-                    $ous = $ADusersReportOU | ConvertFrom-Json
-                    $result = foreach($item in $ous) {
-                        Get-ADUser -Filter $filter -SearchBase $item.ou -Properties $properties
-                    }
-                    $resultCount = @($result).Count
-                    $result = $result | Sort-Object -Property Displayname
-                    
-                    ## export details
-                    $exportData = @()
-                    if($resultCount -gt 0){
-                        foreach($r in $result){
-                            $exportData += [pscustomobject]@{
-                                "CanonicalName" = $r.CanonicalName;
-                                "Displayname" = $r.Displayname;
-                                "UserPrincipalName" = $r.UserPrincipalName;
-                                "SamAccountName" = $r.SamAccountName;
-                                "Department" = $r.Department;
-                                "Title" = $r.Title;
-                                "Enabled" = $r.Enabled;
-                            }
-                        }
-                    }
-                    
-                    $exportCount = @($exportData).Count
-                    HID-Write-Status -Message "Export row count: $exportCount" -Event Information
-                    
-                    $exportData = $exportData | Sort-Object -Property productName, userName
-                    $exportData | Export-Csv -Path $exportFile -Delimiter ";" -NoTypeInformation
-                    
-                    HID-Write-Status -Message "Report [$exportFile] containing $exportCount records created successfully" -Event Success
-                    HID-Write-Summary -Message "Report [$exportFile] containing $exportCount records created successfully" -Event Success
-                }
-            } catch {
-                HID-Write-Status -Message "Error generating report. Error: $($_.Exception.Message)" -Event Error
-                HID-Write-Summary -Message "Error generating report" -Event Failed
-                
-                Hid-Add-TaskResult -ResultValue []
-            }
-'@; 
-
-	$tmpVariables = @'
-{"name":"exportReport","value":"{{form.exportReport}}","secret":false,"typeConstraint":"string"}
-'@ 
-
-	$delegatedFormAutomationTaskGUID = [PSCustomObject]@{} 
-	$delegatedFormAutomationTaskName = @'
-AD-export-report-accounts-mailbox-send-on-behalf
-'@
-	Invoke-HelloIDAutomationTask -TaskName $delegatedFormAutomationTaskName -UseTemplate "False" -AutomationContainer "8" -Variables $tmpVariables -PowershellScript $tmpScript -ObjectGuid $delegatedFormRef.guid -ForceCreateTask $true -returnObject ([Ref]$delegatedFormAutomationTaskGUID) 
-} else {
-	Write-Warning "Delegated form '$delegatedFormName' already exists. Nothing to do with the Delegated Form automation task..." 
-}
-<# End: Delegated Form Automation Task #>
