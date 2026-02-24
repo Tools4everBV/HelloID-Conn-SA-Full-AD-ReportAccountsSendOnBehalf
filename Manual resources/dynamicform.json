@@ -5,8 +5,10 @@
                             },
         "type":  "markdown",
         "summaryVisibility":  "Show",
-        "body":  "The following report will show local AD accounts that have \"Send on behalf\" enabled. Please wait while the data is loading...",
-        "requiresTemplateOptions":  false
+        "body":  "The following report will show local AD accounts that have \"Send on behalf\" enabled. Please wait while the data is loading...\n\nAfter loading, you can use the download button to download the report to CSV.",
+        "requiresTemplateOptions":  false,
+        "requiresKey":  false,
+        "requiresDataSource":  false
     },
     {
         "key":  "grid",
@@ -15,7 +17,7 @@
                                 "grid":  {
                                              "columns":  [
                                                              {
-                                                                 "headerName":  "CanonicalName",
+                                                                 "headerName":  "Canonical Name",
                                                                  "field":  "CanonicalName"
                                                              },
                                                              {
@@ -23,7 +25,7 @@
                                                                  "field":  "Displayname"
                                                              },
                                                              {
-                                                                 "headerName":  "UserPrincipalName",
+                                                                 "headerName":  "User Principal Name",
                                                                  "field":  "UserPrincipalName"
                                                              },
                                                              {
@@ -51,22 +53,27 @@
                                                                    }
                                                      },
                                 "useFilter":  true,
-                                "useDefault":  false
+                                "useDefault":  false,
+                                "allowCsvDownload":  true
                             },
         "type":  "grid",
         "summaryVisibility":  "Hide element",
-        "requiresTemplateOptions":  true
+        "requiresTemplateOptions":  true,
+        "requiresKey":  true,
+        "requiresDataSource":  true
     },
     {
-        "key":  "exportReport",
+        "key":  "textInput",
         "templateOptions":  {
-                                "label":  "Export report (local export on HelloID Agent server)",
-                                "useSwitch":  true,
-                                "checkboxLabel":  "Yes",
-                                "mustBeTrue":  true
+                                "label":  "Reporting only",
+                                "required":  true,
+                                "minLength":  1,
+                                "readonly":  true
                             },
-        "type":  "boolean",
+        "type":  "input",
         "summaryVisibility":  "Show",
-        "requiresTemplateOptions":  true
+        "requiresTemplateOptions":  true,
+        "requiresKey":  true,
+        "requiresDataSource":  false
     }
 ]
