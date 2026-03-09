@@ -17,11 +17,14 @@ $InformationPreference = "Continue"
 $WarningPreference = "Continue"
 
 # global variables (Automation --> Variable library):
-$searchOUs = $AdUsersReportOu
+$adReportSearchOu = $AdReportSearchOu
 
 # variables configured in form:
 # $formValue1 = $datasource.<formElementKey>.<value>
 # $formValue2 = $datasource.<formElementKey>
+
+# Map global variable to local variable for easier testing/modification
+$searchOUs = $adReportSearchOu
 
 #endregion init
 
@@ -46,8 +49,14 @@ try {
     
     if($resultCount -gt 0){
         foreach($r in $result){
-            $returnObject = @{CanonicalName=$r.CanonicalName; Displayname=$r.Displayname; UserPrincipalName=$r.UserPrincipalName; Department=$r.Department; Title=$r.Title; Enabled=$r.Enabled;}
-            Write-output $returnObject
+            Write-Output @{
+                CanonicalName = $r.CanonicalName
+                Displayname = $r.Displayname
+                UserPrincipalName = $r.UserPrincipalName
+                Department = $r.Department
+                Title = $r.Title
+                Enabled = $r.Enabled
+            }
         }
     } else {
         return

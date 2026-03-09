@@ -16,12 +16,10 @@ $script:duplicateFormSuffix = "_tmp" #the suffix will be added to all HelloID re
 #NOTE: You can also update the HelloID Global variable values afterwards in the HelloID Admin Portal: https://<CUSTOMER>.helloid.com/admin/variablelibrary
 $globalHelloIDVariables = [System.Collections.Generic.List[object]]@();
 
-#Global variable #1 >> AdUsersReportOu
-$tmpName = @'
-OU=Users,OU=HelloID,DC=enyoi,DC=local;OU=Users,OU=HelloID Training,DC=enyoi,DC=local;OU=Disabled users,OU=HelloID Training,DC=enyoi,DC=local
-'@ 
+#Global variable #1 >> AdReportSearchOu
+$tmpName = "AdReportSearchOu"
 $tmpValue = "" 
-$globalHelloIDVariables.Add([PSCustomObject]@{name = $tmpName; value = $tmpValue; secret = "True"});
+$globalHelloIDVariables.Add([PSCustomObject]@{name = $tmpName; value = $tmpValue; secret = $false});
 
 
 #make sure write-information logging is visual
@@ -343,11 +341,14 @@ $InformationPreference = "Continue"
 $WarningPreference = "Continue"
 
 # global variables (Automation --> Variable library):
-$searchOUs = $AdUsersReportOu
+$adReportSearchOu = $AdReportSearchOu
 
 # variables configured in form:
 # $formValue1 = $datasource.<formElementKey>.<value>
 # $formValue2 = $datasource.<formElementKey>
+
+# Map global variable to local variable for easier testing/modification
+$searchOUs = $adReportSearchOu
 
 #endregion init
 
@@ -372,8 +373,14 @@ try {
     
     if($resultCount -gt 0){
         foreach($r in $result){
-            $returnObject = @{CanonicalName=$r.CanonicalName; Displayname=$r.Displayname; UserPrincipalName=$r.UserPrincipalName; Department=$r.Department; Title=$r.Title; Enabled=$r.Enabled;}
-            Write-output $returnObject
+            Write-Output @{
+                CanonicalName = $r.CanonicalName
+                Displayname = $r.Displayname
+                UserPrincipalName = $r.UserPrincipalName
+                Department = $r.Department
+                Title = $r.Title
+                Enabled = $r.Enabled
+            }
         }
     } else {
         return
