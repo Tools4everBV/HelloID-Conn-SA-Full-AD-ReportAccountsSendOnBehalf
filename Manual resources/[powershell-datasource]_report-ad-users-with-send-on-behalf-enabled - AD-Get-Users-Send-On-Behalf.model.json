@@ -1,18 +1,10 @@
 [
     {
-        "key":  "UserPrincipalName",
-        "type":  0
-    },
-    {
         "key":  "Department",
         "type":  0
     },
     {
-        "key":  "Title",
-        "type":  0
-    },
-    {
-        "key":  "Enabled",
+        "key":  "UserPrincipalName",
         "type":  0
     },
     {
@@ -20,7 +12,11 @@
         "type":  0
     },
     {
-        "key":  "SamAccountName",
+        "key":  "Enabled",
+        "type":  0
+    },
+    {
+        "key":  "Title",
         "type":  0
     },
     {
